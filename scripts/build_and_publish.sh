@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # scripts/build_and_publish.sh
-set -euo pipefail
+set -uo pipefail
 
 : "${FEISHU_APP_ID:?missing FEISHU_APP_ID}"
 : "${FEISHU_APP_SECRET:?missing FEISHU_APP_SECRET}"
