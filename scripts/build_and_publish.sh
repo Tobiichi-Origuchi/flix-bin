@@ -117,21 +117,21 @@ PKG_BASENAME="$(basename "$PKG_FILE")"
 PKG_SHA256="$(sha256sum "$PKG_FILE" | awk '{print $1}')"
 
 mkdir -p "$META"
-bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-  /^depend = /{print $2}
-' | sort -u > "$META/depends"
+# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
+#   /^depend = /{print $2}
+# ' | sort -u > "$META/depends"
 
-bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-  /^optdepend = /{print $2}
-' | sort -u > "$META/optdepends"
+# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
+#   /^optdepend = /{print $2}
+# ' | sort -u > "$META/optdepends"
 
-bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-  /^provides = /{print $2}
-' | sort -u > "$META/provides"
+# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
+#   /^provides = /{print $2}
+# ' | sort -u > "$META/provides"
 
-bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-  /^conflict = /{print $2}
-' | sort -u > "$META/conflicts"
+# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
+#   /^conflict = /{print $2}
+# ' | sort -u > "$META/conflicts"
 
 PKG_DESC="像聊天一样传文件，新一代局域网全端传输工具"
 REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
@@ -148,19 +148,6 @@ pkgdesc='${PKG_DESC}'
 arch=('x86_64')
 url='${REPO_URL}'
 license=('custom:proprietary')
-# makedepends=('libarchive')
-# depends=(
-# $(emit_array_lines "$META/depends")
-# )
-# optdepends=(
-# $(emit_array_lines "$META/optdepends")
-# )
-# provides=(
-# $(emit_array_lines "$META/provides")
-# )
-# conflicts=(
-# $(emit_array_lines "$META/conflicts")
-# )
 source=(
   "${PKG_BASENAME}::${ASSET_URL}"
 )
