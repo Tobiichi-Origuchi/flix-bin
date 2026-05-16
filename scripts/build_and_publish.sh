@@ -12,6 +12,9 @@ set -uo pipefail
 : "${GH_TOKEN:?missing GH_TOKEN}"
 : "${GITHUB_REPOSITORY:?missing GITHUB_REPOSITORY}"
 
+git config --global --add safe.directory /work
+git config --global --add safe.directory '*'
+
 ROOT="${GITHUB_WORKSPACE:-$PWD}"
 WORKDIR="$ROOT/.ci-work"
 DIST="$WORKDIR/dist"
@@ -184,6 +187,9 @@ if [[ -z "${PKG_FILE:-}" ]]; then
   exit 1
 fi
 
+mv "$PKG_FILE" "$DIST/${AUR_PACKAGE_NAME}-${PKGVER}-1-x86_64.pkg.tar.zst"
+PKG_FILE="$(find "$DIST" -type f -name '*.pkg.tar.*' | sort | tail -n1)"
+PKG_FILE="$DIST/${AUR_PACKAGE_NAME}-${PKGVER}-1-x86_64.pkg.tar.zst"
 PKG_BASENAME="$(basename "$PKG_FILE")"
 PKG_SHA256="$(sha256sum "$PKG_FILE" | awk '{print $1}')"
 
@@ -249,7 +255,39 @@ package() {
 EOF
 
 cd "$AURGEN"
-makepkg --printsrcinfo > .SRCINFO
+
+cat > .SRCINFO <<EOF
+pkgbase = ${AUR_PACKAGE_NAME}
+	pkgdesc = ${PKG_DESC}
+	pkgver = ${PKGVER}
+	pkgrel = 1
+	url = ${REPO_URL}
+	arch = x86_64
+	license = custom:proprietary
+EOF
+
+while read -r dep; do
+  [[ -n "$dep" ]] && echo "	depends = $dep" >> .SRCINFO
+done < "$META/depends"
+
+while read -r dep; do
+  [[ -n "$dep" ]] && echo "	optdepends = $dep" >> .SRCINFO
+done < "$META/optdepends"
+
+while read -r dep; do
+  [[ -n "$dep" ]] && echo "	provides = $dep" >> .SRCINFO
+done < "$META/provides"
+
+while read -r dep; do
+  [[ -n "$dep" ]] && echo "	conflicts = $dep" >> .SRCINFO
+done < "$META/conflicts"
+
+cat >> .SRCINFO <<EOF
+	source = ${PKG_BASENAME}::${ASSET_URL}
+	sha256sums = ${PKG_SHA256}
+
+pkgname = ${AUR_PACKAGE_NAME}
+EOF
 
 echo "[5/5] Publish GitHub Release"
 export GH_TOKEN
