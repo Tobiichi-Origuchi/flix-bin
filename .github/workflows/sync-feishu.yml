@@ -1,0 +1,50 @@
+# .github/workflows/sync-feishu.yml
+name: sync-feishu-release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and publish in Arch container
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_FOLDER_TOKEN: ${{ secrets.FEISHU_FOLDER_TOKEN }}
+
+          AUR_PACKAGE_NAME: ${{ vars.AUR_PACKAGE_NAME }}
+          AUR_GIT_NAME: ${{ vars.AUR_GIT_NAME }}
+          AUR_GIT_EMAIL: ${{ vars.AUR_GIT_EMAIL }}
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          docker run --rm \
+            -e FEISHU_APP_ID \
+            -e FEISHU_APP_SECRET \
+            -e FEISHU_FOLDER_TOKEN \
+            -e AUR_PACKAGE_NAME \
+            -e AUR_GIT_NAME \
+            -e AUR_GIT_EMAIL \
+            -e AUR_SSH_PRIVATE_KEY \
+            -e GH_TOKEN \
+            -e GITHUB_REPOSITORY \
+            -v "${PWD}:/work" \
+            -w /work \
+            archlinux:base-devel \
+            bash -lc '
+              pacman -Syu --noconfirm --needed \
+                curl jq unzip git openssh github-cli python \
+                binutils fakeroot pkgfile libarchive base-devel
+              bash scripts/build_and_publish.sh
+            '
