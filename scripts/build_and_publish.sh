@@ -35,7 +35,7 @@ get_feishu_token() {
   curl -fsS -X POST \
     "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal" \
     -H "Content-Type: application/json" \
-    -d "$(jq -nc --arg id "$FEISHU_APP_ID" --arg secret "$FEISHU_APP_SECRET" \
+    -d "$(jq -nc --arg id "${FEISHU_APP_ID}" --arg secret "${FEISHU_APP_SECRET}" \
       '{app_id:$id, app_secret:$secret}')" \
   | jq -r '.tenant_access_token'
 }
