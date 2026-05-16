@@ -72,81 +72,10 @@ PY
 }
 
 echo "[1/5] Query Feishu folder"
-echo "[DEBUG] Requesting tenant_access_token"
-
-TOKEN_RESPONSE_FILE="$WORKDIR/token_response.json"
-TOKEN_HEADER_FILE="$WORKDIR/token_headers.txt"
-
-HTTP_CODE=$(
-curl -sS -L \
-  -D "$TOKEN_HEADER_FILE" \
-  -o "$TOKEN_RESPONSE_FILE" \
-  -w "%{http_code}" \
-  -X POST \
-  "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal" \
-  -H "Content-Type: application/json" \
-  -d "$(jq -nc \
-      --arg id "$FEISHU_APP_ID" \
-      --arg secret "$FEISHU_APP_SECRET" \
-      '{app_id:$id, app_secret:$secret}')"
-)
-
-CURL_EXIT=$?
-
-echo "[DEBUG] curl exit code: $CURL_EXIT"
-echo "[DEBUG] HTTP code: $HTTP_CODE"
-
-echo "[DEBUG] Response headers:"
-cat "$TOKEN_HEADER_FILE" || true
-
-echo "[DEBUG] Response body:"
-cat "$TOKEN_RESPONSE_FILE" || true
-
-if [[ "$CURL_EXIT" != "0" ]]; then
-  echo "[ERROR] curl failed"
-  exit 1
-fi
-
-FEISHU_TOKEN="$(jq -r '.tenant_access_token // empty' "$TOKEN_RESPONSE_FILE")"
-
-echo "[DEBUG] token length: ${#FEISHU_TOKEN}"
-
-if [[ -z "$FEISHU_TOKEN" ]]; then
-  echo "[ERROR] Failed to obtain tenant_access_token"
-  exit 1
-fi
-
-echo "[DEBUG] Querying Feishu folder"
-
-FOLDER_RESPONSE_FILE="$WORKDIR/folder_response.json"
-FOLDER_HEADER_FILE="$WORKDIR/folder_headers.txt"
-
-HTTP_CODE=$(
-curl -sS -L \
-  -D "$FOLDER_HEADER_FILE" \
-  -o "$FOLDER_RESPONSE_FILE" \
-  -w "%{http_code}" \
+FEISHU_TOKEN="$(get_feishu_token)"
+FILES_JSON="$(curl -fsS -X GET \
   -H "Authorization: Bearer ${FEISHU_TOKEN}" \
-  "https://open.feishu.cn/open-apis/drive/v1/files?folder_token=${FEISHU_FOLDER_TOKEN}&limit=200"
-)
-
-CURL_EXIT=$?
-
-echo "[DEBUG] curl exit code: $CURL_EXIT"
-echo "[DEBUG] HTTP code: $HTTP_CODE"
-
-echo "[DEBUG] Response headers:"
-cat "$FOLDER_HEADER_FILE" || true
-
-echo "[DEBUG] Response body:"
-cat "$FOLDER_RESPONSE_FILE" || true
-
-if [[ "$CURL_EXIT" != "0" ]]; then
-  echo "[ERROR] folder request failed"
-  exit 1
-fi
-
-FILES_JSON="$(cat "$FOLDER_RESPONSE_FILE")"
+  "https://open.feishu.cn/open-apis/drive/v1/files?folder_token=${FEISHU_FOLDER_TOKEN}")"
 
 read -r FILE_NAME FILE_TOKEN < <(printf '%s' "$FILES_JSON" | choose_latest_deb_zip)
 if [[ -z "${FILE_NAME:-}" || -z "${FILE_TOKEN:-}" ]]; then
