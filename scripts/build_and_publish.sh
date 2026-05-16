@@ -152,7 +152,7 @@ else
 fi
 
 echo "[5/5] Push AUR package"
-eval "\$(ssh-agent -s)"
+eval "$(ssh-agent -s)"
 install -d -m 700 ~/.ssh
 printf '%s\n' "$AUR_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
 chmod 600 ~/.ssh/id_ed25519
