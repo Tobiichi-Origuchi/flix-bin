@@ -25,12 +25,6 @@ AURREPO="$WORKDIR/aur-repo"
 rm -rf "$WORKDIR"
 mkdir -p "$DIST" "$META" "$AURGEN"
 
-echo "[DEBUG] DNS test"
-getent hosts open.feishu.cn || true
-
-echo "[DEBUG] TLS test"
-curl -Ivs https://open.feishu.cn 2>&1 || true
-
 emit_array_lines() {
   local file="$1" line
   while IFS= read -r line; do
@@ -139,7 +133,7 @@ bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
   /^conflict = /{print $2}
 ' | sort -u > "$META/conflicts"
 
-PKG_DESC="Closed-source package distributed via GitHub Release"
+PKG_DESC="像聊天一样传文件，新一代局域网全端传输工具"
 REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
 ASSET_URL="${REPO_URL}/releases/download/v${PKGVER}/${PKG_BASENAME}"
 
@@ -154,19 +148,19 @@ pkgdesc='${PKG_DESC}'
 arch=('x86_64')
 url='${REPO_URL}'
 license=('custom:proprietary')
-makedepends=('libarchive')
-depends=(
-$(emit_array_lines "$META/depends")
-)
-optdepends=(
-$(emit_array_lines "$META/optdepends")
-)
-provides=(
-$(emit_array_lines "$META/provides")
-)
-conflicts=(
-$(emit_array_lines "$META/conflicts")
-)
+# makedepends=('libarchive')
+# depends=(
+# $(emit_array_lines "$META/depends")
+# )
+# optdepends=(
+# $(emit_array_lines "$META/optdepends")
+# )
+# provides=(
+# $(emit_array_lines "$META/provides")
+# )
+# conflicts=(
+# $(emit_array_lines "$META/conflicts")
+# )
 source=(
   "${PKG_BASENAME}::${ASSET_URL}"
 )
@@ -178,8 +172,7 @@ noextract=(
 )
 
 package() {
-  bsdtar --exclude='.PKGINFO' --exclude='.BUILDINFO' --exclude='.MTREE' --exclude='.INSTALL' \
-    -xpf "\$srcdir/${PKG_BASENAME}" -C "\$pkgdir"
+  bsdtar --exclude='.PKGINFO' --exclude='.BUILDINFO' --exclude='.MTREE' --exclude='.INSTALL' -xpf "\$srcdir/${PKG_BASENAME}" -C "\$pkgdir"
 }
 EOF
 
@@ -195,21 +188,21 @@ pkgbase = ${AUR_PACKAGE_NAME}
 	license = custom:proprietary
 EOF
 
-while read -r dep; do
-  [[ -n "$dep" ]] && echo "	depends = $dep" >> .SRCINFO
-done < "$META/depends"
+# while read -r dep; do
+#   [[ -n "$dep" ]] && echo "	depends = $dep" >> .SRCINFO
+# done < "$META/depends"
 
-while read -r dep; do
-  [[ -n "$dep" ]] && echo "	optdepends = $dep" >> .SRCINFO
-done < "$META/optdepends"
+# while read -r dep; do
+#   [[ -n "$dep" ]] && echo "	optdepends = $dep" >> .SRCINFO
+# done < "$META/optdepends"
 
-while read -r dep; do
-  [[ -n "$dep" ]] && echo "	provides = $dep" >> .SRCINFO
-done < "$META/provides"
+# while read -r dep; do
+#   [[ -n "$dep" ]] && echo "	provides = $dep" >> .SRCINFO
+# done < "$META/provides"
 
-while read -r dep; do
-  [[ -n "$dep" ]] && echo "	conflicts = $dep" >> .SRCINFO
-done < "$META/conflicts"
+# while read -r dep; do
+#   [[ -n "$dep" ]] && echo "	conflicts = $dep" >> .SRCINFO
+# done < "$META/conflicts"
 
 cat >> .SRCINFO <<EOF
 	source = ${PKG_BASENAME}::${ASSET_URL}
