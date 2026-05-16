@@ -127,10 +127,8 @@ FINAL_PKG="${DIST}/${AUR_PACKAGE_NAME}-${PKGVER}-1-x86_64.pkg.tar.zst"
 
 cd "$WORKDIR/repack/orig"
 
-bsdtar \
-  --format=gnutar \
-  -cf - . \
-| zstd -19 -T0 -o "$FINAL_PKG"
+find . -mindepth 1 -maxdepth 1 -printf '%P\n' \
+    | bsdtar --zstd -cf "$FINAL_PKG" -T -
 
 PKG_FILE="$FINAL_PKG"
 PKG_BASENAME="$(basename "$PKG_FILE")"
