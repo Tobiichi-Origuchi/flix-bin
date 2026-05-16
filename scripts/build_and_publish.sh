@@ -100,12 +100,13 @@ ASSET_URL="${REPO_URL}/releases/download/v${PKGVER}/${PKG_BASENAME}"
 
 echo "[3/5] Generate AUR PKGBUILD wrapper"
 cat > "$AURGEN/PKGBUILD" <<EOF
+# Maintainer: Origuchi <tobiichioriguchi@gmail.com>
 pkgname=${AUR_PACKAGE_NAME}
 pkgver=${PKGVER}
 pkgrel=1
 pkgdesc='${PKG_DESC}'
 arch=('x86_64')
-url='${REPO_URL}'
+url='https://flix.center'
 license=('custom:proprietary')
 source=(
   "\${pkgname}-\${pkgver}.deb::${ASSET_URL}"
@@ -131,7 +132,7 @@ pkgbase = ${AUR_PACKAGE_NAME}
 	pkgdesc = ${PKG_DESC}
 	pkgver = ${PKGVER}
 	pkgrel = 1
-	url = ${REPO_URL}
+	url = https://flix.center
 	arch = x86_64
 	license = custom:proprietary
 	source = ${AUR_PACKAGE_NAME}-${PKGVER}.deb::${ASSET_URL}
