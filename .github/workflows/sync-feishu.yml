@@ -46,7 +46,7 @@ jobs:
               pacman -Syu --noconfirm --needed \
                 curl jq unzip git openssh github-cli python \
                 binutils fakeroot pkgfile libarchive base-devel \
-                pacman-contrib namcap \
+                pacman-contrib namcap
               curl -sL https://raw.githubusercontent.com/helixarch/debtap/master/debtap -o /usr/local/bin/debtap
               chmod +x /usr/local/bin/debtap
               pkgfile -u || true
