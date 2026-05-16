@@ -42,19 +42,23 @@ get_feishu_token() {
 
 choose_latest_deb_zip() {
   jq -r '
-    .data.files[]
-    | select(.name | test("\\.deb\\.zip$"))
-    | [.name, .file_token]
+    .data.files
+    | map(select(.name | test("-deb\\.zip$")))
+    | sort_by(.modified_time | tonumber)
+    | last
+    | [.name, .token]
     | @tsv
-  ' | sort -V | tail -n1
+  '
 }
 
 extract_version_from_name() {
   python3 - "$1" <<'PY'
 import re, sys
 name = sys.argv[1]
-m = re.match(r'^(.*)-(.+)-\.deb\.zip$', name)
-print(m.group(2) if m else "")
+m = re.match(r'^.+-([0-9][A-Za-z0-9._-]*)-deb\.zip$', name)
+if not m:
+    raise SystemExit(f"Cannot parse version from: {name}")
+print(m.group(1))
 PY
 }
 
