@@ -32,7 +32,7 @@ emit_array_lines() {
 }
 
 get_feishu_token() {
-  curl -fsS -X GET \
+  curl -fsS -X POST \
     "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal" \
     -H "Content-Type: application/json" \
     -d "$(jq -nc --arg id "$FEISHU_APP_ID" --arg secret "$FEISHU_APP_SECRET" \
