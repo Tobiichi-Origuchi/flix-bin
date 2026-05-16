@@ -86,6 +86,13 @@ fi
 echo "Selected file: $FILE_NAME"
 echo "Version: $PKGVER"
 
+export GH_TOKEN
+
+if gh release view "v${PKGVER}" >/dev/null 2>&1; then
+  echo "Version ${PKGVER} already published, skipping build."
+  exit 0
+fi
+
 echo "[2/5] Download outer zip and unpack .deb"
 curl -fsS -X GET "https://open.feishu.cn/open-apis/drive/v1/files/${FILE_TOKEN}/download" \
   -H "Authorization: Bearer ${FEISHU_TOKEN}" \
