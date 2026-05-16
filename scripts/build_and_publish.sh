@@ -32,7 +32,7 @@ emit_array_lines() {
 }
 
 get_feishu_token() {
-  curl -fsS -X POST \
+  curl -fsS -X GET \
     "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal" \
     -H "Content-Type: application/json" \
     -d "$(jq -nc --arg id "$FEISHU_APP_ID" --arg secret "$FEISHU_APP_SECRET" \
@@ -60,9 +60,8 @@ PY
 
 echo "[1/5] Query Feishu folder"
 FEISHU_TOKEN="$(get_feishu_token)"
-FILES_JSON="$(curl -fsS \
-  -H "Authorization: Bearer ${FEISHU_TOKEN}" \
-  "https://open.feishu.cn/open-apis/drive/v1/files?folder_token=${FEISHU_FOLDER_TOKEN}&limit=200")"
+FILES_JSON="$(curl -fsS -X GET "https://open.feishu.cn/open-apis/drive/v1/files?folder_token=${FEISHU_FOLDER_TOKEN}" \
+  -H "Authorization: Bearer ${FEISHU_TOKEN}")"
 
 read -r FILE_NAME FILE_TOKEN < <(printf '%s' "$FILES_JSON" | choose_latest_deb_zip)
 if [[ -z "${FILE_NAME:-}" || -z "${FILE_TOKEN:-}" ]]; then
@@ -80,9 +79,8 @@ echo "Selected file: $FILE_NAME"
 echo "Version: $PKGVER"
 
 echo "[2/5] Download outer zip and unpack .deb"
-curl -fsSL \
+curl -fsS -X GET "https://open.feishu.cn/open-apis/drive/v1/files/${FILE_TOKEN}/download" \
   -H "Authorization: Bearer ${FEISHU_TOKEN}" \
-  "https://open.feishu.cn/open-apis/drive/v1/files/${FILE_TOKEN}/download" \
   -o "$WORKDIR/source.zip"
 
 mkdir -p "$WORKDIR/outer"
