@@ -113,7 +113,6 @@ bsdtar -xpf "$ORIG_PKG" -C "$WORKDIR/repack/orig"
 
 cat > "$WORKDIR/repack/orig/.PKGINFO" <<EOF
 pkgname = ${AUR_PACKAGE_NAME}
-pkgbase = ${AUR_PACKAGE_NAME}
 pkgver = ${PKGVER}-1
 pkgdesc = Flix - 像聊天一样传文件. 跨平台文件传输工具，支持局域网内设备间快速分享文件。
 url = https://github.com/${GITHUB_REPOSITORY}
@@ -142,24 +141,6 @@ if [[ -z "${PKG_FILE:-}" ]]; then
 fi
 
 PKG_SHA256="$(sha256sum "$PKG_FILE" | awk '{print $1}')"
-
-mkdir -p "$META"
-# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-#   /^depend = /{print $2}
-# ' | sort -u > "$META/depends"
-
-# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-#   /^optdepend = /{print $2}
-# ' | sort -u > "$META/optdepends"
-
-# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-#   /^provides = /{print $2}
-# ' | sort -u > "$META/provides"
-
-# bsdtar -xOf "$PKG_FILE" .PKGINFO | awk -F' = ' '
-#   /^conflict = /{print $2}
-# ' | sort -u > "$META/conflicts"
-
 PKG_DESC="Flix - 像聊天一样传文件. 跨平台文件传输工具，支持局域网内设备间快速分享文件。"
 REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
 ASSET_URL="${REPO_URL}/releases/download/v${PKGVER}/${PKG_BASENAME}"
