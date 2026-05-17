@@ -35,7 +35,7 @@ choose_latest_deb_zip() {
     | map(select(.name | test("-deb\\.zip$")))
     | sort_by(.modified_time | tonumber)
     | last
-    | [.name, .token]
+    | [.name, .token, .modified_time]
     | @tsv
   '
 }
@@ -56,8 +56,8 @@ FILES_JSON="$(curl -fsS -X GET \
   -H "Authorization: Bearer ${FEISHU_TOKEN}" \
   "https://open.feishu.cn/open-apis/drive/v1/files?folder_token=${FEISHU_FOLDER_TOKEN}")"
 
-read -r FILE_NAME FILE_TOKEN < <(printf '%s' "$FILES_JSON" | choose_latest_deb_zip)
-if [[ -z "${FILE_NAME:-}" || -z "${FILE_TOKEN:-}" ]]; then
+read -r FILE_NAME FILE_TOKEN MODIFIED_TIME < <(printf '%s' "$FILES_JSON" | choose_latest_deb_zip)
+if [[ -z "${FILE_NAME:-}" || -z "${FILE_TOKEN:-}" || -z "${MODIFIED_TIME:-}" ]]; then
   echo "No .deb.zip file found in folder"
   exit 1
 fi
@@ -72,9 +72,34 @@ echo "Selected file: $FILE_NAME"
 echo "Version: $PKGVER"
 
 export GH_TOKEN
+PKGREL=1
+
 if gh release view "v${PKGVER}" >/dev/null 2>&1; then
-  echo "Version ${PKGVER} already published, skipping build."
-  exit 0
+  echo "Version ${PKGVER} exists on GitHub."
+  RELEASE_BODY=$(gh release view "v${PKGVER}" --json body -q .body)
+  TRACKING_JSON=$(echo "$RELEASE_BODY" | grep -oP '(?<=<!-- tracking: ).*(?= -->)' || true)
+  
+  if [[ -n "$TRACKING_JSON" ]]; then
+    PREV_MOD_TIME=$(echo "$TRACKING_JSON" | jq -r .modified_time)
+    PREV_PKGREL=$(echo "$TRACKING_JSON" | jq -r .pkgrel)
+    
+    if [[ "$MODIFIED_TIME" == "$PREV_MOD_TIME" ]]; then
+      echo "File has not been modified (mtime: $MODIFIED_TIME). Skipping build."
+      exit 0
+    else
+      echo "File has been silently modified by upstream (mtime: $PREV_MOD_TIME -> $MODIFIED_TIME). Bumping pkgrel."
+      if [[ "$PREV_PKGREL" =~ ^[0-9]+$ ]]; then
+        PKGREL=$((PREV_PKGREL + 1))
+      else
+        PKGREL=2
+      fi
+    fi
+  else
+    echo "No tracking info found in existing release. Forcing rebuild with bumped pkgrel."
+    PKGREL=2
+  fi
+else
+  echo "Version ${PKGVER} is new. Proceeding with build."
 fi
 
 echo "[2/5] Download outer zip and unpack .deb"
@@ -103,24 +128,24 @@ cat > "$AURGEN/PKGBUILD" <<EOF
 # Maintainer: Origuchi <tobiichioriguchi@gmail.com>
 pkgname=${AUR_PACKAGE_NAME}
 pkgver=${PKGVER}
-pkgrel=1
+pkgrel=${PKGREL}
 pkgdesc='${PKG_DESC}'
 arch=('x86_64')
 url='https://flix.center'
 license=('custom:proprietary')
 source=(
-  "\${pkgname}-\${pkgver}.deb::${ASSET_URL}"
+  "\${pkgname}-\${pkgver}-\${pkgrel}.deb::${ASSET_URL}"
 )
 sha256sums=(
   '${PKG_SHA256}'
 )
 noextract=(
-  "\${pkgname}-\${pkgver}.deb"
+  "\${pkgname}-\${pkgver}-\${pkgrel}.deb"
 )
 
 package() {
   cd "\$srcdir"
-  bsdtar -xf "\${pkgname}-\${pkgver}.deb"
+  bsdtar -xf "\${pkgname}-\${pkgver}-\${pkgrel}.deb"
   bsdtar -xf data.tar.* -C "\$pkgdir"
 }
 EOF
@@ -131,11 +156,11 @@ cat > .SRCINFO <<EOF
 pkgbase = ${AUR_PACKAGE_NAME}
 	pkgdesc = ${PKG_DESC}
 	pkgver = ${PKGVER}
-	pkgrel = 1
+	pkgrel = ${PKGREL}
 	url = https://flix.center
 	arch = x86_64
 	license = custom:proprietary
-	source = ${AUR_PACKAGE_NAME}-${PKGVER}.deb::${ASSET_URL}
+	source = ${AUR_PACKAGE_NAME}-${PKGVER}-${PKGREL}.deb::${ASSET_URL}
 	sha256sums = ${PKG_SHA256}
 
 pkgname = ${AUR_PACKAGE_NAME}
@@ -143,12 +168,17 @@ EOF
 
 echo "[4/5] Publish GitHub Release"
 export GH_TOKEN
+RELEASE_NOTES="Automated build from Feishu folder ${FEISHU_FOLDER_TOKEN}
+
+<!-- tracking: {\"modified_time\": \"${MODIFIED_TIME}\", \"pkgrel\": ${PKGREL}} -->"
+
 if gh release view "v${PKGVER}" >/dev/null 2>&1; then
   gh release upload "v${PKGVER}" "$PKG_FILE" --clobber
+  gh release edit "v${PKGVER}" --notes "$RELEASE_NOTES"
 else
   gh release create "v${PKGVER}" "$PKG_FILE" \
     --title "${AUR_PACKAGE_NAME} ${PKGVER}" \
-    --notes "Automated build from Feishu folder ${FEISHU_FOLDER_TOKEN}"
+    --notes "$RELEASE_NOTES"
 fi
 
 echo "[5/5] Push AUR package"
@@ -173,7 +203,7 @@ git add PKGBUILD .SRCINFO
 if git diff --cached --quiet; then
   echo "AUR repo already up to date"
 else
-  git commit -m "Update to ${PKGVER}"
+  git commit -m "Update to ${PKGVER}-${PKGREL}"
   git push
 fi
 
