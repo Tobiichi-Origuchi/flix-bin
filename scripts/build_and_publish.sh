@@ -78,11 +78,11 @@ if gh release view "v${PKGVER}" >/dev/null 2>&1; then
   echo "Version ${PKGVER} exists on GitHub."
   RELEASE_BODY=$(gh release view "v${PKGVER}" --json body -q .body)
   TRACKING_JSON=$(echo "$RELEASE_BODY" | grep -oP '(?<=<!-- tracking: ).*(?= -->)' || true)
-  
+
   if [[ -n "$TRACKING_JSON" ]]; then
     PREV_MOD_TIME=$(echo "$TRACKING_JSON" | jq -r .modified_time)
     PREV_PKGREL=$(echo "$TRACKING_JSON" | jq -r .pkgrel)
-    
+
     if [[ "$MODIFIED_TIME" == "$PREV_MOD_TIME" ]]; then
       echo "File has not been modified (mtime: $MODIFIED_TIME). Skipping build."
       exit 0
@@ -132,7 +132,9 @@ pkgrel=${PKGREL}
 pkgdesc='${PKG_DESC}'
 arch=('x86_64')
 url='https://flix.center'
-license=('custom:proprietary')
+license=('LicenseRef-Flix-Proprietary')
+depends=('libkeybinder3' 'libappindicator' 'libnotify')
+optdepends=('qt5-base: for KDE Plasma sharing integration')
 source=(
   "\${pkgname}-\${pkgver}-\${pkgrel}.deb::${ASSET_URL}"
 )
@@ -159,7 +161,12 @@ pkgbase = ${AUR_PACKAGE_NAME}
 	pkgrel = ${PKGREL}
 	url = https://flix.center
 	arch = x86_64
-	license = custom:proprietary
+	license = LicenseRef-Flix-Proprietary
+	depends = libkeybinder3
+	depends = libappindicator
+	depends = libnotify
+	optdepends = qt5-base: for KDE Plasma sharing integration
+	noextract = ${AUR_PACKAGE_NAME}-${PKGVER}-${PKGREL}.deb
 	source = ${AUR_PACKAGE_NAME}-${PKGVER}-${PKGREL}.deb::${ASSET_URL}
 	sha256sums = ${PKG_SHA256}
 
