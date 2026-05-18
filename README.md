@@ -7,8 +7,17 @@ This is an __*unofficial*__ repo of [Flix](https://flix.center)
 
 ### Usage
 
+#### Arch Linux
+
 ```bash
 yay/paru -S flix-bin
+```
+
+#### Windows
+
+```pwsh
+scoop bucket add flix 
+scoop install flix/flix
 ```
 
 ### License
