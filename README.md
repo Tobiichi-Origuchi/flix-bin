@@ -22,6 +22,10 @@ scoop install flix/flix
 
 ### License
 
-© 2026 Jianghe Zhilian (Wuhan) Network Technology Co., Ltd. All rights reserved.
+The code for this project is licensed under the MIT License.
 
-By downloading and using this software, you agree to their Terms of Use and Privacy Policy.
+This project has no affiliation with Flix. If you find any issues with the code, please provide feedback directly to me, not to Flix.
+
+Flix software © 2026 Jianghe Zhilian (Wuhan) Network Technology Co., Ltd. All rights reserved.
+
+By downloading and using the software, you agree to their Terms of Use and Privacy Policy.
