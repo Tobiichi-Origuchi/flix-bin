@@ -9,12 +9,12 @@ permissions:
   contents: write
 
 jobs:
-  sync:
+  sync-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build and publish
+      - name: Build and publish Linux
         env:
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
@@ -27,4 +27,23 @@ jobs:
 
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: bash scripts/build_and_publish.sh
+        run: bash scripts/build_and_publish_linux.sh
+
+  sync-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and publish Windows
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_WIN_FOLDER_TOKEN: ${{ secrets.FEISHU_WIN_FOLDER_TOKEN }}
+
+          SCOOP_SSH_PRIVATE_KEY: ${{ secrets.SCOOP_SSH_PRIVATE_KEY }}
+          SCOOP_GIT_NAME: ${{ vars.AUR_GIT_NAME }}
+          SCOOP_GIT_EMAIL: ${{ vars.AUR_GIT_EMAIL }}
+
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: bash scripts/build_and_publish_windows.sh
