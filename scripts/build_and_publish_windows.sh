@@ -160,12 +160,12 @@ rm -rf "$SCOOPREPO"
 git clone "ssh://git@github.com/Tobiichi-Origuchi/flix.git" "$SCOOPREPO"
 cd "$SCOOPREPO"
 
-cp "$WORKDIR/manifest/flix.json" .
+cp "$WORKDIR/manifest/flix.json" ./bucket/
 
 git config user.name "$SCOOP_GIT_NAME"
 git config user.email "$SCOOP_GIT_EMAIL"
 
-git add flix.json
+git add ./bucket/flix.json
 if git diff --cached --quiet; then
   echo "Scoop bucket already up to date"
 else
