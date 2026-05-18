@@ -138,13 +138,7 @@ cat > "$WORKDIR/manifest/flix.json" <<EOF
             "url": "${ASSET_URL}",
             "hash": "${PKG_SHA256}"
         }
-    },
-    "shortcuts": [
-        [
-            "flix.exe",
-            "Flix"
-        ]
-    ]
+    }
 }
 EOF
 
