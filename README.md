@@ -16,7 +16,7 @@ yay/paru -S flix-bin
 #### Windows
 
 ```pwsh
-scoop bucket add flix 
+scoop bucket add flix https://github.com/Tobiichi-Origuchi/flix
 scoop install flix/flix
 ```
 
