@@ -142,9 +142,6 @@ source=(
 sha256sums=(
   '${PKG_SHA256}'
 )
-noextract=(
-  "\${pkgname}-\${pkgver}-\${pkgrel}.deb"
-)
 
 package() {
   bsdtar -xf data.tar.xz -C "\$pkgdir"
