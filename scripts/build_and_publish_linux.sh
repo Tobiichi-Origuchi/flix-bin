@@ -134,7 +134,6 @@ arch=('x86_64')
 url='https://flix.center'
 license=('LicenseRef-Flix-Proprietary')
 depends=('libkeybinder3' 'libappindicator' 'libnotify')
-optdepends=('qt5-base: for KDE Plasma sharing integration')
 conflicts=('flix-bin')
 replaces=('flix-bin')
 source=(
@@ -148,9 +147,18 @@ noextract=(
 )
 
 package() {
-  cd "\$srcdir"
-  bsdtar -xf "\${pkgname}-\${pkgver}-\${pkgrel}.deb"
-  bsdtar -xf data.tar.* -C "\$pkgdir"
+  bsdtar -xf data.tar.xz -C "\$pkgdir"
+  install -Dm644 "$pkgdir"/opt/flix/data/flutter_assets/assets/data/flix_privacy.md "$pkgdir"/usr/share/licenses/${pkgname}/flix_privacy.md
+  ln -s "$pkgdir"/opt/flix/flix "$pkgdir"/usr/bin/flix
+  sed -i \
+    -e "s/Icon=com.ifreedomer.flix/Icon=flix/" \
+    -e "s/Exec=flix %F/Exec=\/opt\/flix\/flix %F/" \
+    "$pkgdir"/usr/share/applications/flix-send.desktop
+  rm -rf \
+    "$pkgdir"/opt/flix/data/flutter_assets/assets/data/flix-firewall-gui.exe \
+    "$pkgdir"/opt/flix/data/flutter_assets/assets/data/flix-firewall.exe \
+    "$pkgdir"/usr/lib/qt5/plugins/kf5/purpose/flixpurposeplugin.so \
+    "$pkgdir"/usr/local/bin/flix
 }
 EOF
 
@@ -169,7 +177,6 @@ pkgbase = ${AUR_PACKAGE_NAME}
 	depends = libnotify
 	conflicts = flix-bin
 	replaces = flix-bin
-	optdepends = qt5-base: for KDE Plasma sharing integration
 	noextract = ${AUR_PACKAGE_NAME}-${PKGVER}-${PKGREL}.deb
 	source = ${AUR_PACKAGE_NAME}-${PKGVER}-${PKGREL}.deb::${ASSET_URL}
 	sha256sums = ${PKG_SHA256}
