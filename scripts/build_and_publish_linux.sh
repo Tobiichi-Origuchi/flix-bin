@@ -137,7 +137,7 @@ depends=('libkeybinder3' 'libappindicator' 'libnotify')
 conflicts=('flix-bin')
 replaces=('flix-bin')
 source=(
-  "Flix-Linux-\${pkgrel}.deb::${ASSET_URL}"
+  "Flix-Linux-\${pkgver}.deb::${ASSET_URL}"
 )
 sha256sums=(
   '${PKG_SHA256}'
@@ -175,7 +175,7 @@ pkgbase = ${AUR_PACKAGE_NAME}
 	depends = libnotify
 	conflicts = flix-bin
 	replaces = flix-bin
-	source = Flix-Linux-${PKGREL}.deb::${ASSET_URL}
+	source = Flix-Linux-${PKGVER}.deb::${ASSET_URL}
 	sha256sums = ${PKG_SHA256}
 
 pkgname = ${AUR_PACKAGE_NAME}
