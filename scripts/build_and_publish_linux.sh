@@ -135,6 +135,8 @@ url='https://flix.center'
 license=('LicenseRef-Flix-Proprietary')
 depends=('libkeybinder3' 'libappindicator' 'libnotify')
 optdepends=('qt5-base: for KDE Plasma sharing integration')
+conflicts=('flix-bin')
+replaces=('flix-bin')
 source=(
   "\${pkgname}-\${pkgver}-\${pkgrel}.deb::${ASSET_URL}"
 )
