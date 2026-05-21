@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# scripts/build_and_publish.sh
-set -uo pipefail
+# scripts/build_and_publish_linux.sh
+set -euo pipefail
 
 : "${FEISHU_APP_ID:?missing FEISHU_APP_ID}"
 : "${FEISHU_APP_SECRET:?missing FEISHU_APP_SECRET}"
@@ -137,7 +137,7 @@ depends=('libkeybinder3' 'libappindicator' 'libnotify')
 conflicts=('flix-bin')
 replaces=('flix-bin')
 source=(
-  "\${pkgname}-\${pkgver}-\${pkgrel}.deb::${ASSET_URL}"
+  "Flix-Linux-\${pkgrel}.deb::${ASSET_URL}"
 )
 sha256sums=(
   '${PKG_SHA256}'
@@ -145,18 +145,18 @@ sha256sums=(
 
 package() {
   bsdtar -xf data.tar.zst -C "\$pkgdir"
-  install -Dm644 "\$pkgdir"/opt/flix/data/flutter_assets/assets/data/flix_privacy.md "\$pkgdir"/usr/share/licenses/\${pkgname}/flix_privacy.md
+  install -Dm644 "\$pkgdir/opt/flix/data/flutter_assets/assets/data/flix_privacy.md" "\$pkgdir/usr/share/licenses/\${pkgname}/flix_privacy.md"
   install -d "\$pkgdir/usr/bin"
-  ln -s /opt/flix/flix "\$pkgdir"/usr/bin/flix
+  ln -s /opt/flix/flix "\$pkgdir/usr/bin/flix"
   sed -i \\
     -e "s/Icon=com.ifreedomer.flix/Icon=flix/" \\
     -e "s/Exec=flix %F/Exec=\/opt\/flix\/flix %F/" \\
-    "\$pkgdir"/usr/share/applications/flix-send.desktop
+    "\$pkgdir/usr/share/applications/flix-send.desktop"
   rm -rf \\
-    "\$pkgdir"/opt/flix/data/flutter_assets/assets/data/flix-firewall-gui.exe \\
-    "\$pkgdir"/opt/flix/data/flutter_assets/assets/data/flix-firewall.exe \\
-    "\$pkgdir"/usr/lib/qt5/plugins/kf5/purpose/flixpurposeplugin.so \\
-    "\$pkgdir"/usr/local/bin/flix
+    "\$pkgdir/opt/flix/data/flutter_assets/assets/data/flix-firewall-gui.exe" \\
+    "\$pkgdir/opt/flix/data/flutter_assets/assets/data/flix-firewall.exe" \\
+    "\$pkgdir/usr/lib/" \\
+    "\$pkgdir/usr/local/"
 }
 EOF
 
@@ -175,8 +175,7 @@ pkgbase = ${AUR_PACKAGE_NAME}
 	depends = libnotify
 	conflicts = flix-bin
 	replaces = flix-bin
-	noextract = ${AUR_PACKAGE_NAME}-${PKGVER}-${PKGREL}.deb
-	source = ${AUR_PACKAGE_NAME}-${PKGVER}-${PKGREL}.deb::${ASSET_URL}
+	source = Flix-Linux-${PKGREL}.deb::${ASSET_URL}
 	sha256sums = ${PKG_SHA256}
 
 pkgname = ${AUR_PACKAGE_NAME}
@@ -184,7 +183,7 @@ EOF
 
 echo "[4/5] Publish GitHub Release"
 export GH_TOKEN
-RELEASE_NOTES="Automated build from Feishu folder ${FEISHU_FOLDER_TOKEN}
+RELEASE_NOTES="Fetch from Feishu folder ${FEISHU_FOLDER_TOKEN}
 
 <!-- tracking: {\"modified_time\": \"${MODIFIED_TIME}\", \"pkgrel\": ${PKGREL}} -->"
 
@@ -193,7 +192,7 @@ if gh release view "v${PKGVER}" >/dev/null 2>&1; then
   gh release edit "v${PKGVER}" --notes "$RELEASE_NOTES"
 else
   gh release create "v${PKGVER}" "$PKG_FILE" \
-    --title "${AUR_PACKAGE_NAME} ${PKGVER}" \
+    --title "Flix Linux ${PKGVER}" \
     --notes "$RELEASE_NOTES"
 fi
 

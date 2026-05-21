@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # scripts/build_and_publish_windows.sh
-set -uo pipefail
+set -euo pipefail
 
 : "${FEISHU_APP_ID:?missing FEISHU_APP_ID}"
 : "${FEISHU_APP_SECRET:?missing FEISHU_APP_SECRET}"
@@ -112,7 +112,7 @@ REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
 ASSET_URL="${REPO_URL}/releases/download/${RELEASE_TAG}/${PKG_BASENAME}"
 
 echo "[3/5] Publish GitHub Release for Windows"
-RELEASE_NOTES="Automated Windows build from Feishu folder ${FEISHU_WIN_FOLDER_TOKEN}
+RELEASE_NOTES="Fetch from Feishu folder ${FEISHU_WIN_FOLDER_TOKEN}
 
 <!-- tracking: {\"modified_time\": \"${MODIFIED_TIME}\", \"pkgrel\": ${PKGREL}} -->"
 
