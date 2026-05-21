@@ -10,7 +10,7 @@ This is an __*unofficial*__ repo of [Flix](https://flix.center)
 #### Arch Linux
 
 ```bash
-yay/paru -S flix-bin
+yay/paru -S ifreedomer-flix
 ```
 
 #### Windows
