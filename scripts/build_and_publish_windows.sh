@@ -127,20 +127,30 @@ fi
 
 echo "[4/5] Generate Scoop App Manifest"
 mkdir -p "$WORKDIR/manifest"
-cat > "$WORKDIR/manifest/flix.json" <<EOF
+cat > "$WORKDIR/manifest/flix.json" <<'EOFJSON'
 {
-    "version": "${PKGVER}-${PKGREL}",
+    "version": "__PKGVER__-__PKGREL__",
     "description": "Flix - 像聊天一样传文件. 跨平台文件传输工具，支持局域网内设备间快速分享文件。",
     "homepage": "https://flix.center",
     "license": "Freeware",
+    "post_install": [
+        "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut([Environment]::GetFolderPath('Programs') + '\\Flix.lnk'); $s.TargetPath = \"$dir\\flix.exe\"; $s.WorkingDirectory = \"$dir\"; $s.Save()\""
+    ],
     "architecture": {
         "64bit": {
-            "url": "${ASSET_URL}",
-            "hash": "${PKG_SHA256}"
+            "url": "__ASSET_URL__",
+            "hash": "__PKG_SHA256__"
         }
     }
 }
-EOF
+EOFJSON
+
+sed -i \
+  -e "s|__PKGVER__|${PKGVER}|g" \
+  -e "s|__PKGREL__|${PKGREL}|g" \
+  -e "s|__ASSET_URL__|${ASSET_URL}|g" \
+  -e "s|__PKG_SHA256__|${PKG_SHA256}|g" \
+  "$WORKDIR/manifest/flix.json"
 
 echo "[5/5] Push to Scoop Bucket Repo"
 eval "$(ssh-agent -s)"
