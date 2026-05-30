@@ -47,3 +47,36 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: bash scripts/build_and_publish_windows.sh
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [sync-linux, sync-windows]
+    if: always() && !cancelled()
+    steps:
+      - name: Delete old releases and tags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Fetch all releases
+          releases=$(gh release list --repo "$GITHUB_REPOSITORY" --json tagName,createdAt --order desc -L 100)
+
+          # Identify the latest release for each platform
+          latest_linux=$(echo "$releases" | jq -r '[.[] | select(.tagName | test("^v\\d"))][0].tagName // empty')
+          latest_windows=$(echo "$releases" | jq -r '[.[] | select(.tagName | test("^windows-v"))][0].tagName // empty')
+
+          echo "Keeping latest Linux release:   ${latest_linux:-<none>}"
+          echo "Keeping latest Windows release: ${latest_windows:-<none>}"
+
+          # Delete all releases except the latest of each platform
+          echo "$releases" | jq -r '.[].tagName' | while read -r tag; do
+            if [[ "$tag" == "$latest_linux" || "$tag" == "$latest_windows" ]]; then
+              echo "  ✓ Keeping: $tag"
+              continue
+            fi
+            echo "  ✗ Deleting: $tag"
+            gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+          done
+
+          echo "Cleanup complete."
