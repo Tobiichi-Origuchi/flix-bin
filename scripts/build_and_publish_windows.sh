@@ -134,7 +134,7 @@ cat > "$WORKDIR/manifest/flix.json" <<'EOFJSON'
     "homepage": "https://flix.center",
     "license": "Freeware",
     "post_install": [
-        "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut([Environment]::GetFolderPath('Programs') + '\\Flix.lnk'); $s.TargetPath = \"$dir\\flix.exe\"; $s.WorkingDirectory = \"$dir\"; $s.Save()\""
+        "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut([Environment]::GetFolderPath('Programs') + '\\Flix.lnk'); $s.TargetPath = \"$dir\\flix.exe\"; $s.WorkingDirectory = \"$dir\"; $s.Save()"
     ],
     "architecture": {
         "64bit": {
