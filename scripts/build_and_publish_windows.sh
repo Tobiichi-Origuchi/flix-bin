@@ -133,8 +133,24 @@ cat > "$WORKDIR/manifest/flix.json" <<'EOFJSON'
     "description": "Flix - 像聊天一样传文件. 跨平台文件传输工具，支持局域网内设备间快速分享文件。",
     "homepage": "https://flix.center",
     "license": "Freeware",
-    "post_install": [
-        "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut([Environment]::GetFolderPath('Programs') + '\\Flix.lnk'); $s.TargetPath = \"$dir\\flix.exe\"; $s.WorkingDirectory = \"$dir\"; $s.Save()"
+    "shortcuts": [
+        [
+            "flix.exe",
+            "..\\Flix"
+        ]
+    ],
+    "installer": {
+        "script": [
+            ". \"$bucketsdir\\$bucket\\bin\\utils.ps1\"",
+            "New-PersistDirectory \"$env:APPDATA\\com.ifreedomer\\flix\" \"$persist_dir\\AppData\" -Migrate"
+        ]
+    },
+    "pre_uninstall": [
+        "$bucket = $install.bucket",
+        ". \"$bucketsdir\\$bucket\\bin\\utils.ps1\"",
+        "Stop-App",
+        "Remove-Junction \"$env:APPDATA\\com.ifreedomer\\flix\"",
+        "Remove-EmptyDirectory \"$env:APPDATA\\com.ifreedomer\""
     ],
     "architecture": {
         "64bit": {
