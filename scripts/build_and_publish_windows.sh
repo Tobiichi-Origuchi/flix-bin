@@ -30,7 +30,7 @@ get_feishu_token() {
 choose_latest_win_zip() {
   jq -r '
     .data.files
-    | map(select(.name | test("-portable\\.zip$")))
+    | map(select(.name | test("Flix-Windows.*portable.*\\.zip$")))
     | sort_by(.modified_time | tonumber)
     | last
     | [.name, .token, .modified_time]
@@ -41,6 +41,8 @@ choose_latest_win_zip() {
 extract_version_from_name() {
   local name="$1"
   if [[ "$name" =~ Flix-Windows-([0-9][A-Za-z0-9._-]*)-portable\.zip$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  elif [[ "$name" =~ Flix-Windows-portable-([0-9][A-Za-z0-9._-]*)\.zip$ ]]; then
     echo "${BASH_REMATCH[1]}"
   else
     echo "Cannot parse version from: $name" >&2
