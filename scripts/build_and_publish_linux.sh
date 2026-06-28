@@ -32,7 +32,7 @@ get_feishu_token() {
 choose_latest_deb_zip() {
   jq -r '
     .data.files
-    | map(select(.name | test("-deb\\.zip$")))
+    | map(select(.name | test("-deb\\.zip$"; "i")))
     | sort_by(.modified_time | tonumber)
     | last
     | [.name, .token, .modified_time]
@@ -42,7 +42,8 @@ choose_latest_deb_zip() {
 
 extract_version_from_name() {
   local name="$1"
-  if [[ "$name" =~ .+-([0-9][A-Za-z0-9._-]*)-deb\.zip$ ]]; then
+  local lower="${name,,}"
+  if [[ "$lower" =~ .+-([0-9][a-za-z0-9._-]*)-deb\.zip$ ]]; then
     echo "${BASH_REMATCH[1]}"
   else
     echo "Cannot parse version from: $name" >&2
@@ -110,14 +111,17 @@ curl -fsS -X GET "https://open.feishu.cn/open-apis/drive/v1/files/${FILE_TOKEN}/
 mkdir -p "$WORKDIR/outer"
 unzip -q "$WORKDIR/source.zip" -d "$WORKDIR/outer"
 
-DEB_FILE="$(find "$WORKDIR/outer" -type f -name '*.deb' | sort | head -n1)"
+DEB_FILE="$(find "$WORKDIR/outer" -type f -iname '*.deb' | sort | head -n1)"
 if [[ -z "${DEB_FILE:-}" ]]; then
   echo "No .deb file found inside zip"
   exit 1
 fi
 
-PKG_FILE="$DEB_FILE"
-PKG_BASENAME="$(basename "$PKG_FILE")"
+STD_NAME="Flix-Linux-${PKGVER}.deb"
+mv "$DEB_FILE" "$WORKDIR/$STD_NAME"
+
+PKG_FILE="$WORKDIR/$STD_NAME"
+PKG_BASENAME="$STD_NAME"
 PKG_SHA256="$(sha256sum "$PKG_FILE" | awk '{print $1}')"
 PKG_DESC="Flix - 像聊天一样传文件. 跨平台文件传输工具，支持局域网内设备间快速分享文件。"
 REPO_URL="https://github.com/${GITHUB_REPOSITORY}"

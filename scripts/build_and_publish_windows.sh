@@ -30,7 +30,7 @@ get_feishu_token() {
 choose_latest_win_zip() {
   jq -r '
     .data.files
-    | map(select(.name | test("Flix-Windows.*portable.*\\.zip$")))
+    | map(select(.name | test("Flix-Windows.*portable.*\\.zip$"; "i")))
     | sort_by(.modified_time | tonumber)
     | last
     | [.name, .token, .modified_time]
@@ -40,9 +40,10 @@ choose_latest_win_zip() {
 
 extract_version_from_name() {
   local name="$1"
-  if [[ "$name" =~ Flix-Windows-([0-9][A-Za-z0-9._-]*)-portable\.zip$ ]]; then
+  local lower="${name,,}"
+  if [[ "$lower" =~ flix-windows-([0-9][a-za-z0-9._-]*)-portable\.zip$ ]]; then
     echo "${BASH_REMATCH[1]}"
-  elif [[ "$name" =~ Flix-Windows-portable-([0-9][A-Za-z0-9._-]*)\.zip$ ]]; then
+  elif [[ "$lower" =~ flix-windows-portable-([0-9][a-za-z0-9._-]*)\.zip$ ]]; then
     echo "${BASH_REMATCH[1]}"
   else
     echo "Cannot parse version from: $name" >&2
@@ -107,8 +108,11 @@ curl -fsS -X GET "https://open.feishu.cn/open-apis/drive/v1/files/${FILE_TOKEN}/
   -H "Authorization: Bearer ${FEISHU_TOKEN}" \
   -o "$WORKDIR/$FILE_NAME"
 
-PKG_FILE="$WORKDIR/$FILE_NAME"
-PKG_BASENAME="$FILE_NAME"
+STD_NAME="Flix-Windows-portable-${PKGVER}.zip"
+mv "$WORKDIR/$FILE_NAME" "$WORKDIR/$STD_NAME"
+
+PKG_FILE="$WORKDIR/$STD_NAME"
+PKG_BASENAME="$STD_NAME"
 PKG_SHA256="$(sha256sum "$PKG_FILE" | awk '{print $1}')"
 REPO_URL="https://github.com/${GITHUB_REPOSITORY}"
 ASSET_URL="${REPO_URL}/releases/download/${RELEASE_TAG}/${PKG_BASENAME}"
