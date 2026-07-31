@@ -41,14 +41,26 @@ choose_latest_win_zip() {
 extract_version_from_name() {
   local name="$1"
   local lower="${name,,}"
+  local version
   if [[ "$lower" =~ flix-windows-([0-9][a-za-z0-9._-]*)-portable\.zip$ ]]; then
-    echo "${BASH_REMATCH[1]}"
+    version="${BASH_REMATCH[1]}"
   elif [[ "$lower" =~ flix-windows-portable-([0-9][a-za-z0-9._-]*)\.zip$ ]]; then
-    echo "${BASH_REMATCH[1]}"
+    version="${BASH_REMATCH[1]}"
   else
     echo "Cannot parse version from: $name" >&2
     exit 1
   fi
+
+  while [[ "$version" =~ [._-]$ ]]; do
+    version="${version%?}"
+  done
+
+  if [[ -z "$version" ]]; then
+    echo "Cannot parse version from: $name" >&2
+    exit 1
+  fi
+
+  echo "$version"
 }
 
 echo "[1/5] Query Feishu Windows folder and check version"
